@@ -1,16 +1,17 @@
 // Define input parameters and set the appropriate paths for your files
-params.reads = 'zygmukin_reads/*.fastq.gz'
-params.outdir = 'zygmukin_results'
-params.adapters = 'TruSeq3-PE.fa'  // Adapter sequences for trimming
+params.reads = 'zygmukin_reads/*.fastq.gz' // Path to raw sequencing data (FASTQ files)
+params.outdir = 'zygmukin_results' // Directory to store results
+params.adapters = 'TruSeq3-PE.fa' // Adapter sequences for trimming 
 
 // Process 1: FastQC (Quality Control)
+// Perform quality control on the raw reads to assess their quality 
 process fastqc {
-    container 'biocontainers/fastqc:v0.11.9'
+    container 'biocontainers/fastqc:v0.11.9' // Docker image for FastQC tool
     input:
-    path reads
+    path reads // Input FASTQ files
 
     output:
-    path 'fastqc_reports'
+    path 'fastqc_reports' // Directory to store FastQC output
 
     script:
     """
@@ -19,14 +20,15 @@ process fastqc {
 }
 
 // Process 2: Trimmomatic (Read Trimming)
+// Trim the raw reads to remove low-quality bases and adapter sequences using Trimmomatic
 process trimmomatic {
-    container 'biocontainers/trimmomatic:v0.39'
+    container 'biocontainers/trimmomatic:v0.39' // Docker image for Trimmomatic
     input:
-    path reads
-    path params.adapters
+    path reads // Input paired-end reads
+    path params.adapters // Adapter sequences for trimming
 
     output:
-    path 'trimmed_reads'
+    path 'trimmed_reads' // Output directory for trimmed reads
 
     script:
     """
@@ -38,13 +40,14 @@ process trimmomatic {
 }
 
 // Process 3: Trinity Assembly (De novo assembly)
+// Perform a de novo assembly of the transcriptome using Trinity, an RNA-Seq assembly tool
 process trinity_assembly {
-    container 'trinityrnaseq/trinityrnaseq:2.13.2'
+    container 'trinityrnaseq/trinityrnaseq:2.13.2' // Docker image for Trinity RNA-Seq assembly tool
     input:
-    path reads
+    path reads // Input trimmed reads
 
     output:
-    path 'trinity_output'
+    path 'trinity_output' // Output directory for Trinity assembly
 
     script:
     """
@@ -53,15 +56,16 @@ process trinity_assembly {
 }
 
 // Process 4: RSEM (RNA-Seq Quantification)
+// Use RSEM to quantify gene expression levels from the assembled transcriptome
 process rsem_analysis {
-    container 'biocontainers/rsem:v1.3.1'
+    container 'biocontainers/rsem:v1.3.1' // Docker image for RSEM (RNA-Seq expression tool)
     input:
-    path 'trinity_output/Trinity.fasta'
-    path 'trimmed_reads/1P.fastq.gz'
-    path 'trimmed_reads/2P.fastq.gz'
+    path 'trinity_output/Trinity.fasta' // Assembled transcriptome (FASTA file)
+    path 'trimmed_reads/1P.fastq.gz' // Trimmed read pair 1
+    path 'trimmed_reads/2P.fastq.gz' // Trimmed read pair 2
 
     output:
-    path 'rsem_results'
+    path 'rsem_results' // Directory to store RSEM results
 
     script:
     """
@@ -73,14 +77,15 @@ process rsem_analysis {
     """
 }
 
-// Process 5: TransDecoder (ORF prediction)
+// Process 5: TransDecoder (ORF Prediction)
+// Predict open reading frames (ORFs) from the assembled transcriptome using TransDecoder
 process transdecoder_prediction {
-    container 'biocontainers/transdecoder:v5.5.0'
+    container 'biocontainers/transdecoder:v5.5.0' // Docker image for TransDecoder
     input:
-    path 'trinity_output/Trinity.fasta'
+    path 'trinity_output/Trinity.fasta' // Assembled transcriptome (FASTA file)
 
     output:
-    path 'transdecoder_output'
+    path 'transdecoder_output' // Directory to store TransDecoder results
 
     script:
     """
@@ -91,14 +96,15 @@ process transdecoder_prediction {
 }
 
 // Process 6: Trinotate Annotation
+// Annotate the predicted proteins using Trinotate, integrating information from various sources (e.g., Gene Ontology, protein domains)
 process trinnotate_annotation {
-    container 'trinotate/trinotate:latest'
+    container 'trinotate/trinotate:latest' // Docker image for Trinotate annotation tool
     input:
-    path 'trinity_output/Trinity.fasta'
-    path 'rsem_results/counts.txt'
+    path 'trinity_output/Trinity.fasta' // Assembled transcriptome (FASTA file)
+    path 'rsem_results/counts.txt' // RSEM quantification file
 
     output:
-    path 'trinotate_results'
+    path 'trinotate_results' // Directory to store Trinotate annotation results
 
     script:
     """
@@ -107,13 +113,14 @@ process trinnotate_annotation {
 }
 
 // Process 7: KOBAS Annotation (Functional Annotation)
+// Perform functional annotation using KOBAS, a tool for annotating proteins with functional information
 process kobas_annotation {
-    container 'agbase/kobas:3.0.3_3'
+    container 'agbase/kobas:3.0.3_3' // Docker image for KOBAS annotation tool
     input:
-    path 'transdecoder_output/Trinity.fasta.transdecoder.pep'
+    path 'transdecoder_output/Trinity.fasta.transdecoder.pep' // Predicted proteins (peptide sequences)
 
     output:
-    path 'kobas_results'
+    path 'kobas_results' // Directory to store KOBAS annotation results
 
     script:
     """
@@ -122,13 +129,14 @@ process kobas_annotation {
 }
 
 // Process 8: Differential Expression Analysis (DESeq2, Limma-voom, edgeR)
+// Perform differential gene expression analysis using three different methods: DESeq2, Limma-voom, and edgeR
 process deseq2_analysis {
-    container 'biocontainers/r-ver:v3.6.1'
+    container 'biocontainers/r-ver:v3.6.1' // Docker image for R (DESeq2 analysis)
     input:
-    path 'rsem_results/counts.txt'
+    path 'rsem_results/counts.txt' // RSEM quantification file
 
     output:
-    path 'deseq2_results.csv'
+    path 'deseq2_results.csv' // Output DESeq2 results
 
     script:
     """
@@ -137,12 +145,12 @@ process deseq2_analysis {
 }
 
 process limma_voom_analysis {
-    container 'biocontainers/r-ver:v3.6.1'
+    container 'biocontainers/r-ver:v3.6.1' // Docker image for R (Limma-voom analysis)
     input:
-    path 'rsem_results/counts.txt'
+    path 'rsem_results/counts.txt' // RSEM quantification file
 
     output:
-    path 'limma_voom_results.csv'
+    path 'limma_voom_results.csv' // Output Limma-voom results
 
     script:
     """
@@ -151,12 +159,12 @@ process limma_voom_analysis {
 }
 
 process edger_analysis {
-    container 'biocontainers/r-ver:v3.6.1'
+    container 'biocontainers/r-ver:v3.6.1' // Docker image for R (edgeR analysis)
     input:
-    path 'rsem_results/counts.txt'
+    path 'rsem_results/counts.txt' // RSEM quantification file
 
     output:
-    path 'edger_results.csv'
+    path 'edger_results.csv' // Output edgeR results
 
     script:
     """
@@ -166,17 +174,30 @@ process edger_analysis {
 
 // Define workflow execution
 workflow {
-    reads = params.reads
+    reads = params.reads // Load raw sequencing data
 
+    // Quality control step
     qc_results = fastqc(reads)  
+
+    // Trimming step to clean up reads
     trimmed_reads = trimmomatic(qc_results.out)  
+
+    // Perform de novo assembly of the transcriptome
     assembled_transcriptome = trinity_assembly(trimmed_reads.out)
 
+    // Quantify gene expression using RSEM
     quantified_reads = rsem_analysis(assembled_transcriptome.out, trimmed_reads.out)
+
+    // Predict ORFs using TransDecoder
     predicted_orfs = transdecoder_prediction(assembled_transcriptome.out)
+
+    // Annotate the assembled transcriptome using Trinotate
     annotation_results = trinnotate_annotation(assembled_transcriptome.out, quantified_reads.out)
+
+    // Perform functional annotation using KOBAS
     functional_annotation = kobas_annotation(predicted_orfs.out)
 
+    // Perform differential expression analysis using multiple methods
     de_analysis1 = deseq2_analysis(quantified_reads.out)
     de_analysis2 = limma_voom_analysis(quantified_reads.out)
     de_analysis3 = edger_analysis(quantified_reads.out)
