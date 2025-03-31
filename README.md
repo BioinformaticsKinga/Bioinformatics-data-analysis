@@ -1,4 +1,4 @@
-# Bioinformatics data analysis
+# RNA_Seq de novo assembly
 This pipeline integrates several powerful bioinformatics tools to perform a comprehensive RNA-seq analysis, from quality control to functional annotation and differential expression analysis.
 
 Summary of Workflow:
