@@ -1,10 +1,10 @@
 // Define input parameters and set the appropriate paths for your files
 params.reads = 'zygmukin_reads/*.fastq.gz' // Path to raw sequencing data (FASTQ files)
 params.outdir = 'zygmukin_results' // Directory to store results
-params.adapters = 'TruSeq3-PE.fa' // Adapter sequences for trimming 
+params.adapters = 'TruSeq3-PE.fa' // Adapter sequences for trimming
 
 // Process 1: FastQC (Quality Control)
-// Perform quality control on the raw reads to assess their quality 
+// Perform quality control on the raw reads to assess their quality
 process fastqc {
     container 'biocontainers/fastqc:v0.11.9' // Docker image for FastQC tool
     input:
@@ -95,10 +95,9 @@ process transdecoder_prediction {
     """
 }
 
-// Process 6: Trinotate Annotation
+// Process 6: Trinotate Annotation (no longer in container)
 // Annotate the predicted proteins using Trinotate, integrating information from various sources (e.g., Gene Ontology, protein domains)
 process trinnotate_annotation {
-    container 'trinotate/trinotate:latest' // Docker image for Trinotate annotation tool
     input:
     path 'trinity_output/Trinity.fasta' // Assembled transcriptome (FASTA file)
     path 'rsem_results/counts.txt' // RSEM quantification file
@@ -108,7 +107,8 @@ process trinnotate_annotation {
 
     script:
     """
-    ./trinotate_annotation.sh trinity_output/Trinity.fasta rsem_results/counts.txt trinotate_results
+    # Ensure trinotate_annotation.sh is available and executable on your system
+    trinotate_annotation.sh trinity_output/Trinity.fasta rsem_results/counts.txt trinotate_results
     """
 }
 
@@ -177,10 +177,10 @@ workflow {
     reads = params.reads // Load raw sequencing data
 
     // Quality control step
-    qc_results = fastqc(reads)  
+    qc_results = fastqc(reads)
 
     // Trimming step to clean up reads
-    trimmed_reads = trimmomatic(qc_results.out)  
+    trimmed_reads = trimmomatic(qc_results.out)
 
     // Perform de novo assembly of the transcriptome
     assembled_transcriptome = trinity_assembly(trimmed_reads.out)
@@ -191,7 +191,7 @@ workflow {
     // Predict ORFs using TransDecoder
     predicted_orfs = transdecoder_prediction(assembled_transcriptome.out)
 
-    // Annotate the assembled transcriptome using Trinotate
+    // Annotate the assembled transcriptome using Trinotate (without container)
     annotation_results = trinnotate_annotation(assembled_transcriptome.out, quantified_reads.out)
 
     // Perform functional annotation using KOBAS
