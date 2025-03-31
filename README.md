@@ -3,16 +3,16 @@ This pipeline integrates several powerful bioinformatics tools to perform a comp
 
 Summary of Workflow:
 
-    Quality Control: Raw reads are assessed using FastQC.
+Quality Control: Raw reads are assessed using FastQC.
 
-    Read Trimming: Trimmomatic is used to trim adapter sequences and low-quality bases from reads.
+Read Trimming: Trimmomatic is used to trim adapter sequences and low-quality bases from reads.
 
-    Transcriptome Assembly: Trinity assembles RNA-seq reads into transcript sequences.
+Transcriptome Assembly: Trinity assembles RNA-seq reads into transcript sequences.
 
-    Expression Quantification: RSEM calculates transcript abundance from the assembled data.
+Expression Quantification: RSEM calculates transcript abundance from the assembled data.
 
-    ORF Prediction: TransDecoder predicts coding sequences from the transcriptome.
+ORF Prediction: TransDecoder predicts coding sequences from the transcriptome.
 
-    Functional Annotation: Transcripts are annotated using Trinotate and KOBAS, providing insights into gene function and pathways.
+Functional Annotation: Transcripts are annotated using Trinotate and KOBAS, providing insights into gene function and pathways.
 
-    Differential Expression: DESeq2, Limma-voom, and edgeR are used to detect differentially expressed genes across conditions.
+Differential Expression: DESeq2, Limma-voom, and edgeR are used to detect differentially expressed genes across conditions.
