@@ -2,12 +2,10 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Initialize variables
 sequences = {}
 total_length = 0
 total_numer_bp = 0
 
-# Open and read the FASTA file
 with open("trinity_izoformy_epip.fasta", "r") as fasta_file:
     current_id = ""
     current_seq = ""
@@ -34,7 +32,6 @@ with open("trinity_izoformy_epip.fasta", "r") as fasta_file:
         total_length += len(current_seq)
         total_numer_bp += 1
 
-# Perform calculations
 sequence_lengths = list(sequences.values())
 sequence_lengths.sort(reverse=True)
 
@@ -52,7 +49,6 @@ for length in sequence_lengths:
         n50_length = length
         break
 
-# Prepare data for the table
 table_data = [
     ["Total Number", total_numer_bp],
     ["Total Length (bp)", total_bp],
@@ -62,7 +58,6 @@ table_data = [
     ["Average Length (bp)", round(average_length, 2)]
 ]
 
-# Create a table using Matplotlib
 fig, ax = plt.subplots(figsize=(8, 6))
 ax.axis('off')
 table = ax.table(cellText=table_data, cellLoc='center', loc='center')
