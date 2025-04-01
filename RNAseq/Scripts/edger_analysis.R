@@ -2,7 +2,7 @@ library(edgeR)
 
 # Load count data and experimental conditions
 counts <- read.table("counts.txt", header=TRUE, row.names=1)
-coldata <- data.frame(condition=c("control", "treatment"))  # Replace with actual conditions
+coldata <- data.frame(condition=c("control", "drought"))  
 
 # Prepare the data for edgeR
 y <- DGEList(counts=counts, group=coldata$condition)
